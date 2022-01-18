@@ -1,0 +1,104 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 266e7f2..13e8490 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -1655,6 +1655,7 @@ dependencies = [
+  "log",
+  "portaudio-rs",
+  "rodio",
++ "sdl2",
+  "shell-words",
+  "thiserror",
+  "tokio 1.8.1",
+@@ -2874,6 +2875,29 @@ version = "1.1.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
+ 
++[[package]]
++name = "sdl2"
++version = "0.34.5"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "deecbc3fa9460acff5a1e563e05cb5f31bba0aa0c214bb49a43db8159176d54b"
++dependencies = [
++ "bitflags",
++ "lazy_static",
++ "libc",
++ "sdl2-sys",
++]
++
++[[package]]
++name = "sdl2-sys"
++version = "0.34.5"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "41a29aa21f175b5a41a6e26da572d5e5d1ee5660d35f9f9d0913e8a802098f74"
++dependencies = [
++ "cfg-if 0.1.10",
++ "libc",
++ "version-compare",
++]
++
+ [[package]]
+ name = "secret-service"
+ version = "1.1.3"
+@@ -3750,6 +3774,12 @@ dependencies = [
+  "failure",
+ ]
+ 
++[[package]]
++name = "version-compare"
++version = "0.0.10"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "d63556a25bae6ea31b52e640d7c41d1ab27faba4ccb600013837a3d0b3994ca1"
++
+ [[package]]
+ name = "version_check"
+ version = "0.1.5"
+diff --git a/Cargo.toml b/Cargo.toml
+index b522886..131af16 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -55,6 +55,7 @@ default = ["alsa_backend"]
+ portaudio_backend = ["librespot-playback/portaudio-backend"]
+ pulseaudio_backend = ["librespot-playback/pulseaudio-backend"]
+ rodio_backend = ["librespot-playback/rodio-backend"]
++sdl_backend = ["librespot-playback/sdl-backend"]
+ 
+ [package.metadata.deb]
+ depends = "$auto, systemd, pulseaudio"
+diff --git a/src/config.rs b/src/config.rs
+index 490539f..e3df5b6 100644
+--- a/src/config.rs
++++ b/src/config.rs
+@@ -27,6 +27,8 @@ static BACKEND_VALUES: &[&str] = &[
+     "portaudio",
+     #[cfg(feature = "rodio_backend")]
+     "rodio",
++    #[cfg(feature = "sdl_backend")]
++    "sdl",
+ ];
+ 
+ /// The backend used by librespot
+@@ -37,6 +39,7 @@ pub enum Backend {
+     PortAudio,
+     PulseAudio,
+     Rodio,
++    Sdl,
+ }
+ 
+ impl FromStr for Backend {
+@@ -48,6 +51,7 @@ impl FromStr for Backend {
+             "portaudio" => Ok(Backend::PortAudio),
+             "pulseaudio" => Ok(Backend::PulseAudio),
+             "rodio" => Ok(Backend::Rodio),
++            "sdl" => Ok(Backend::Sdl),
+             _ => unreachable!(),
+         }
+     }
+@@ -60,6 +64,7 @@ impl ToString for Backend {
+             Backend::PortAudio => "portaudio".to_string(),
+             Backend::PulseAudio => "pulseaudio".to_string(),
+             Backend::Rodio => "rodio".to_string(),
++            Backend::Sdl => "sdl".to_string(),
+         }
+     }
+ }
